@@ -32,6 +32,19 @@ function find(id) {
   return persons.filter(person => person.id === parseInt(id)).pop();
 }
 
+// Random between [min, max)
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function nextId(existingIds) {
+  let candidateId = null;
+  do {
+    candidateId = getRandomInt(5, 100000);
+  } while (existingIds.includes(candidateId));
+  return candidateId;
+}
+
 app.get("/api/persons", (request, response) => {
   return response.json(persons);
 });
@@ -43,6 +56,15 @@ app.get("/api/persons/:id", (request, response) => {
     return response.json(person);
   }
   return response.sendStatus(404);
+});
+
+app.post("/api/persons", (request, response) => {
+  const person = request.body;
+  person.id = nextId(persons.map(n => n.id));
+
+  persons = persons.concat(person);
+
+  response.json(person);
 });
 
 app.delete("/api/persons/:id", (request, response) => {
