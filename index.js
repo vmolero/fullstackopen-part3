@@ -1,8 +1,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
+const cors = require("cors");
+
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
 
 function isEmptyObject(obj) {
@@ -21,7 +24,7 @@ app.use(
   )
 );
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 let persons = [
   {
     name: "Arto Hellas",
