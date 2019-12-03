@@ -32,6 +32,16 @@ app.get("/api/persons", (request, response) => {
   return response.json(persons);
 });
 
+app.get("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+
+  const person = persons.filter(person => person.id === parseInt(id)).pop();
+  if (person) {
+    return response.json(person);
+  }
+  return response.sendStatus(404);
+});
+
 app.get("/info", (request, response) => {
   const now = new Date();
   const info = `<p>Phonebook has info for ${
