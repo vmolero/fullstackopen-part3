@@ -28,18 +28,32 @@ let persons = [
   }
 ];
 
+function find(id) {
+  return persons.filter(person => person.id === parseInt(id)).pop();
+}
+
 app.get("/api/persons", (request, response) => {
   return response.json(persons);
 });
 
 app.get("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-
-  const person = persons.filter(person => person.id === parseInt(id)).pop();
+  const person = find(id);
   if (person) {
     return response.json(person);
   }
   return response.sendStatus(404);
+});
+
+app.delete("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const person = find(id);
+
+  if (!person) {
+    return response.sendStatus(404);
+  }
+  persons = persons.filter(person => person.id !== parseInt(id));
+  return response.send(person);
 });
 
 app.get("/info", (request, response) => {
