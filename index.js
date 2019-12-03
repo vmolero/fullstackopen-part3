@@ -4,7 +4,22 @@ const morgan = require("morgan");
 const app = express();
 
 app.use(bodyParser.json());
-app.use(morgan("tiny"));
+
+function isEmptyObject(obj) {
+  return Object.keys(obj).length === 0 && obj.constructor === Object;
+}
+morgan.token("morganBody", function(req) {
+  if ("body" in req && !isEmptyObject(req.body)) {
+    return JSON.stringify(req.body);
+  }
+  return " ";
+});
+
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :morganBody"
+  )
+);
 
 const PORT = 3001;
 let persons = [
