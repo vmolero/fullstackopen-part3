@@ -45,6 +45,10 @@ function nextId(existingIds) {
   return candidateId;
 }
 
+function validatePersonProperty(property, person) {
+  return property in person && person[property].length > 0;
+}
+
 app.get("/api/persons", (request, response) => {
   return response.json(persons);
 });
@@ -55,16 +59,25 @@ app.get("/api/persons/:id", (request, response) => {
   if (person) {
     return response.json(person);
   }
-  return response.sendStatus(404);
+  return response.status(404).send({ error: "Not found" });
 });
 
 app.post("/api/persons", (request, response) => {
   const person = request.body;
+  if (!validatePersonProperty("name", person)) {
+    return response.status(400).send({ error: "Missing name" });
+  }
+  if (!validatePersonProperty("number", person)) {
+    return response.status(400).send({ error: "Missing number" });
+  }
+  const existingPerson = persons.filter(p => p.name === person.name).pop();
+  if (existingPerson) {
+    return response.status(400).send({ error: "name must be unique" });
+  }
   person.id = nextId(persons.map(n => n.id));
-
   persons = persons.concat(person);
 
-  response.json(person);
+  return response.json(person);
 });
 
 app.delete("/api/persons/:id", (request, response) => {
@@ -72,7 +85,7 @@ app.delete("/api/persons/:id", (request, response) => {
   const person = find(id);
 
   if (!person) {
-    return response.sendStatus(404);
+    return response.status(404).send({ error: "Not found" });
   }
   persons = persons.filter(person => person.id !== parseInt(id));
   return response.send(person);
