@@ -4,7 +4,15 @@ GET http://localhost:3001/api/persons
 
 ###
 
-GET http://localhost:3001/api/persons/1
+GET http://localhost:3001/api/persons/5deaa54ff1ddb7012ebb3a34
+
+###
+
+GET http://localhost:3001/api/persons/wrongid
+
+### unknown endpoint
+
+GET http://localhost:3001/api/unknown
 
 ### POST
 
