@@ -1,7 +1,9 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -27,44 +29,51 @@ app.use(
 );
 
 const PORT = process.env.PORT || 3001;
-let persons = [
-  {
-    name: "Arto Hellas",
-    number: "040-123456",
-    id: 1
-  },
-  {
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-    id: 2
-  },
-  {
-    name: "Dan Abramov",
-    number: "12-43-234345",
-    id: 3
-  },
-  {
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-    id: 4
+const MONGODB_URI = process.env.MONGODB_URI;
+
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String
+});
+
+const Person = mongoose.model("Person", personSchema);
+
+personSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
   }
-];
+});
+
+function savePerson({ name, number }) {
+  const person = new Person({
+    name,
+    number
+  });
+
+  return person.save().then(response => {
+    console.log(`added ${name} number ${number} to phonebook`);
+    return response;
+  });
+}
+
+function findBy(criteria) {
+  return Person.find(criteria).then(result => {
+    return result.map(person => person.toJSON());
+  });
+}
+function findAll() {
+  return findBy({});
+}
 
 function find(id) {
-  return persons.filter(person => person.id === parseInt(id)).pop();
-}
-
-// Random between [min, max)
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-function nextId(existingIds) {
-  let candidateId = null;
-  do {
-    candidateId = getRandomInt(5, 100000);
-  } while (existingIds.includes(candidateId));
-  return candidateId;
+  return Person.findById(id).then(person => person.toJSON());
 }
 
 function validatePersonProperty(property, person) {
@@ -72,16 +81,17 @@ function validatePersonProperty(property, person) {
 }
 
 app.get("/api/persons", (request, response) => {
-  return response.json(persons);
+  return findAll().then(people => response.json(people));
 });
 
 app.get("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-  const person = find(id);
-  if (person) {
-    return response.json(person);
-  }
-  return response.status(404).send({ error: "Not found" });
+  return find(id).then(person => {
+    if (person) {
+      return response.json(person);
+    }
+    return response.status(404).send({ error: "Not found" });
+  });
 });
 
 app.post("/api/persons", (request, response) => {
@@ -92,33 +102,33 @@ app.post("/api/persons", (request, response) => {
   if (!validatePersonProperty("number", person)) {
     return response.status(400).send({ error: "Missing number" });
   }
-  const existingPerson = persons.filter(p => p.name === person.name).pop();
-  if (existingPerson) {
-    return response.status(400).send({ error: "name must be unique" });
-  }
-  person.id = nextId(persons.map(n => n.id));
-  persons = persons.concat(person);
-
-  return response.json(person);
+  return findBy({ name: person.name }).then(result => {
+    const existingPerson = result.pop();
+    if (existingPerson) {
+      return response.status(400).send({ error: "name must be unique" });
+    }
+    return savePerson(person).then(savedPerson =>
+      response.json(savedPerson.toJSON())
+    );
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-  const person = find(id);
-
-  if (!person) {
-    return response.status(404).send({ error: "Not found" });
-  }
-  persons = persons.filter(person => person.id !== parseInt(id));
-  return response.send(person);
+  find(id).then(person => {
+    if (!person) {
+      return response.status(404).send({ error: "Not found" });
+    }
+    return response.sendStatus(400);
+  });
 });
 
 app.get("/info", (request, response) => {
-  const now = new Date();
-  const info = `<p>Phonebook has info for ${
-    persons.length
-  } people.</p><p>${now}</p>`;
-  response.send(info);
+  return findAll().then(persons => {
+    const now = new Date();
+    const info = `<p>Phonebook has info for ${persons.length} people.</p><p>${now}</p>`;
+    return response.send(info);
+  });
 });
 
 app.listen(PORT, () => {
