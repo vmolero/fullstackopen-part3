@@ -44,9 +44,14 @@ function find(id) {
   return Person.findById(id).then(person => person.toJSON());
 }
 
+function findByIdAndRemove(id) {
+  return Person.findByIdAndRemove(id);
+}
+
 module.exports = {
   find,
   findBy,
   findAll,
+  findByIdAndRemove,
   save
 };

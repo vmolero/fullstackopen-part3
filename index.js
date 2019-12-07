@@ -72,7 +72,11 @@ app.put("/api/persons/:id", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  return response.sendStatus(400);
+  return Person.findByIdAndRemove(request.params.id)
+    .then(result => {
+      return response.status(204).end();
+    })
+    .catch(error => response.status(404).end());
 });
 
 app.get("/info", (request, response) => {
