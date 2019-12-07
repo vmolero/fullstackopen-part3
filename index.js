@@ -3,7 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
-const mongoose = require("mongoose");
+const Person = require("./models/person");
 
 const app = express();
 
@@ -29,64 +29,18 @@ app.use(
 );
 
 const PORT = process.env.PORT || 3001;
-const MONGODB_URI = process.env.MONGODB_URI;
-
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String
-});
-
-const Person = mongoose.model("Person", personSchema);
-
-personSchema.set("toJSON", {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  }
-});
-
-function savePerson({ name, number }) {
-  const person = new Person({
-    name,
-    number
-  });
-
-  return person.save().then(response => {
-    console.log(`added ${name} number ${number} to phonebook`);
-    return response;
-  });
-}
-
-function findBy(criteria) {
-  return Person.find(criteria).then(result => {
-    return result.map(person => person.toJSON());
-  });
-}
-function findAll() {
-  return findBy({});
-}
-
-function find(id) {
-  return Person.findById(id).then(person => person.toJSON());
-}
 
 function validatePersonProperty(property, person) {
   return property in person && person[property].length > 0;
 }
 
 app.get("/api/persons", (request, response) => {
-  return findAll().then(people => response.json(people));
+  return Person.findAll().then(people => response.json(people));
 });
 
 app.get("/api/persons/:id", (request, response) => {
   const id = request.params.id;
-  return find(id).then(person => {
+  return Person.find(id).then(person => {
     if (person) {
       return response.json(person);
     }
@@ -96,35 +50,33 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.post("/api/persons", (request, response) => {
   const person = request.body;
+  return addToPhoneBook(response, person);
+});
+
+function addToPhoneBook(response, person) {
   if (!validatePersonProperty("name", person)) {
     return response.status(400).send({ error: "Missing name" });
   }
   if (!validatePersonProperty("number", person)) {
     return response.status(400).send({ error: "Missing number" });
   }
-  return findBy({ name: person.name }).then(result => {
-    const existingPerson = result.pop();
-    if (existingPerson) {
-      return response.status(400).send({ error: "name must be unique" });
-    }
-    return savePerson(person).then(savedPerson =>
-      response.json(savedPerson.toJSON())
-    );
-  });
+  return Person.save(person)
+    .then(response => {
+      console.log(`added ${person.name} number ${person.number} to phonebook`);
+      return response;
+    })
+    .then(savedPerson => response.json(savedPerson.toJSON()));
+}
+app.put("/api/persons/:id", (request, response) => {
+  return response.sendStatus(400);
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = request.params.id;
-  find(id).then(person => {
-    if (!person) {
-      return response.status(404).send({ error: "Not found" });
-    }
-    return response.sendStatus(400);
-  });
+  return response.sendStatus(400);
 });
 
 app.get("/info", (request, response) => {
-  return findAll().then(persons => {
+  return Person.findAll().then(persons => {
     const now = new Date();
     const info = `<p>Phonebook has info for ${persons.length} people.</p><p>${now}</p>`;
     return response.send(info);
