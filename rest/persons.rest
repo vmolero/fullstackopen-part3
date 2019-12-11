@@ -84,3 +84,16 @@ PUT http://localhost:3001/api/persons/5deaa54ff1ddb7012ebb3a3
 ### DELETE
 
 DELETE http://localhost:3001/api/persons/1
+
+
+### HEROKU
+
+GET https://guarded-atoll-05288.herokuapp.com/info
+
+###
+
+GET https://guarded-atoll-05288.herokuapp.com/api/persons
+
+###
+
+GET https://guarded-atoll-05288.herokuapp.com/api/persons/5de796fc2ef3360807e39784
