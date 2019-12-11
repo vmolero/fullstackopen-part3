@@ -72,6 +72,15 @@ Content-Type: application/json
   "number": "1234-123-12345"
 }
 
+### PUT
+
+PUT http://localhost:3001/api/persons/5deaa54ff1ddb7012ebb3a3
+
+{
+  "name": "alba molero",
+  "number": "222-222-22222"
+}
+
 ### DELETE
 
 DELETE http://localhost:3001/api/persons/1

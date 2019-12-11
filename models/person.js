@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+mongoose.set("useFindAndModify", false);
+
 const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGODB_URI, {
@@ -48,10 +50,18 @@ function findByIdAndRemove(id) {
   return Person.findByIdAndRemove(id);
 }
 
+function findByIdAndUpdate(id, person, options) {
+  return Person.findByIdAndUpdate(id, person, options).then(_r => {
+    const person = _r;
+    return person;
+  });
+}
+
 module.exports = {
   find,
   findBy,
   findAll,
   findByIdAndRemove,
+  findByIdAndUpdate,
   save
 };
