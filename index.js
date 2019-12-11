@@ -49,24 +49,19 @@ app.get("/api/persons/:id", (request, response, next) => {
     .catch(err => next(err));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const person = request.body;
-  return addToPhoneBook(response, person);
+  return addToPhoneBook(response, person).catch(err => next(err));
 });
 
 function addToPhoneBook(response, person) {
-  if (!validatePersonProperty("name", person)) {
-    return response.status(400).send({ error: "Missing name" });
-  }
-  if (!validatePersonProperty("number", person)) {
-    return response.status(400).send({ error: "Missing number" });
-  }
   return Person.save(person)
     .then(response => {
       console.log(`added ${person.name} number ${person.number} to phonebook`);
       return response;
     })
-    .then(savedPerson => response.json(savedPerson.toJSON()));
+    .then(savedPerson => savedPerson.toJSON())
+    .then(person => response.json(person));
 }
 app.put("/api/persons/:id", (request, response, next) => {
   const body = request.body;
@@ -107,6 +102,10 @@ app.use(unknownEndpoint);
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
+
+  if (error.name === "ValidationError") {
+    return response.status(400).send({ error: error.message });
+  }
 
   if (error.name === "CastError" && error.kind === "ObjectId") {
     return response.status(400).send({ error: "malformatted id" });
