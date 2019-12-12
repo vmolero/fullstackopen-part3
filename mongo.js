@@ -18,10 +18,7 @@ if (4 in process.argv) {
 
 const url = `mongodb+srv://fullstack:${password}@cluster0-qoe6q.mongodb.net/test?retryWrites=true&w=majority`;
 
-mongoose.connect(
-  url,
-  { useNewUrlParser: true, useUnifiedTopology: true }
-);
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const personSchema = new mongoose.Schema({
   name: String,
@@ -36,7 +33,9 @@ if (!!name && !!number) {
     number
   });
 
+  /* eslint-disable no-unused-vars */
   person.save().then(response => {
+    /* eslint-enable no-unused-vars */
     console.log(`added ${name} number ${number} to phonebook`);
     mongoose.connection.close();
   });

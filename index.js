@@ -29,10 +29,6 @@ app.use(
 
 const PORT = process.env.PORT || 3001;
 
-function validatePersonProperty(property, person) {
-  return property in person && person[property].length > 0;
-}
-
 app.get("/api/persons", (request, response) => {
   return Person.findAll().then(people => response.json(people));
 });
@@ -79,11 +75,15 @@ app.put("/api/persons/:id", (request, response, next) => {
 });
 
 app.delete("/api/persons/:id", (request, response, next) => {
-  return Person.findByIdAndRemove(request.params.id)
-    .then(result => {
-      return response.status(204).end();
-    })
-    .catch(error => next(err));
+  return (
+    Person.findByIdAndRemove(request.params.id)
+      /* eslint-disable no-unused-vars */
+      .then(result => {
+        /* eslint-enable no-unused-vars */
+        return response.status(204).end();
+      })
+      .catch(err => next(err))
+  );
 });
 
 app.get("/info", (request, response) => {
