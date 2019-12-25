@@ -22,7 +22,6 @@ or, in case of existing remote:
 $ git remote add heroku https://git.heroku.com/guarded-atoll-05288.git
 ```
 using heruku command, it can be achieved, read: https://devcenter.heroku.com/articles/git#creating-a-heroku-remote
-```
 
 
 ```
