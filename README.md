@@ -2,7 +2,7 @@ Heroku App at: https://guarded-atoll-05288.herokuapp.com/
 
 API: https://guarded-atoll-05288.herokuapp.com/api/persons
 
-My notes:
+# My notes:
 
 Install Heroku command line tool
 
@@ -21,6 +21,11 @@ or, in case of existing remote:
 ```
 $ git remote add heroku https://git.heroku.com/guarded-atoll-05288.git
 ```
+also (with heruku command)
+```
+https://devcenter.heroku.com/articles/git#creating-a-heroku-remote
+```
+
 
 ```
 $ heroku login
